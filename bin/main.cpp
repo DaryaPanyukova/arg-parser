@@ -10,7 +10,7 @@ struct Options {
 };
 
 int main(int argc, char** argv) {
-    Options opt;
+  /*  Options opt;
     std::vector<int> values;
 
     ArgumentParser::ArgParser parser("Program");
@@ -41,5 +41,5 @@ int main(int argc, char** argv) {
     }
 
     return 0;
-
+*/
 }
