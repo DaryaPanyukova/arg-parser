@@ -21,7 +21,7 @@ void ArgumentParser::ArgParser::AddHelp(char short_name,
 
 bool ArgumentParser::ArgParser::IntArgsInitialised() {
     for (const auto& elem: int_arg_names) {
-        if (elem.second->values.size() < elem.second->min_args_count) {
+        if (!elem.second->IsInitialised()) {
             return false;
         }
     }
@@ -30,7 +30,7 @@ bool ArgumentParser::ArgParser::IntArgsInitialised() {
 
 bool ArgumentParser::ArgParser::StrArgsInitialised() {
     for (const auto& elem: str_arg_names) {
-        if (elem.second->values.size() < elem.second->min_args_count) {
+        if (!elem.second->IsInitialised()) {
             return false;
         }
     }
@@ -39,7 +39,7 @@ bool ArgumentParser::ArgParser::StrArgsInitialised() {
 
 bool ArgumentParser::ArgParser::BoolArgsInitialised() {
     for (const auto& elem: bool_arg_names) {
-        if (!elem.second->is_initialised) {
+        if (!elem.second->IsInitialised()) {
             return false;
         }
     }
@@ -48,7 +48,8 @@ bool ArgumentParser::ArgParser::BoolArgsInitialised() {
 
 
 bool ArgumentParser::ArgParser::IsInitialised() {
-    return IntArgsInitialised() && StrArgsInitialised() && BoolArgsInitialised();
+    return IntArgsInitialised() && StrArgsInitialised() &&
+           BoolArgsInitialised();
 }
 
 bool is_number(std::string& str) {
@@ -67,47 +68,28 @@ bool is_number(std::string& str) {
 }
 
 
-template<typename Type>
-bool ArgumentParser::ArgParser::A(ArgumentParser::Argument<Type>* argument,
-                                  const Type& value) {
-
-    if (!argument->multi_value && !argument->values.empty()) {
-        return false;
-    } else {
-        argument->values.push_back(value);
-        if (argument->value_to_store != nullptr) {
-            *argument->value_to_store = value;
-        } else if (argument->values_to_store != nullptr) {
-            argument->values_to_store->push_back(value);
-        }
-        return true;
-    }
-}
-
-
-// TODO: struct Argument -> class + private
 // TODO: destructor
 // TODO: value and value_to_store - объединить
-// TODO: const
-// TODO: rename A()
 
+// TODO: isIntItitialised and isStringInitialised can be 1 function
+// TODO: same with GetStringValue
+// TODO: last test
 
-bool ArgumentParser::ArgParser::AddIntArgValue(std::string& name,
-                                               std::string& str_value) {
+bool ArgumentParser::ArgParser::AddIntArgValue(const std::string& name,
+                                               const std::string& str_value) {
     Argument<int32_t>* argument = int_arg_names[name];
     int32_t value = stoi(str_value);
-    return A(argument, value);
+    return argument->AddValue(value);
 }
 
-bool ArgumentParser::ArgParser::AddStrArgValue(std::string& name,
-                                               std::string& value) {
+bool ArgumentParser::ArgParser::AddStrArgValue(const std::string& name,
+                                               const std::string& value) {
     Argument<std::string>* argument = str_arg_names[name];
-    return A(argument, value);
+    return argument->AddValue(value);
 }
 
-bool ArgumentParser::ArgParser::AddArgValue(std::string& name,
-                                            std::string& str_value) {
-    // 3 случая - bool, string, int - искать в трех мапах
+bool ArgumentParser::ArgParser::AddArgValue(const std::string& name,
+                                            const std::string& str_value) {
     if (int_arg_names.count(name)) {
         return AddIntArgValue(name, str_value);
     } else if (str_arg_names.count(name)) {
@@ -121,16 +103,12 @@ bool ArgumentParser::ArgParser::AddBoolArgValue(const std::string& name) {
         return false;
     }
     BoolArgument* argument = bool_arg_names[name];
-    argument->value = true;
-    if (argument->value_to_store != nullptr) {
-        *argument->value_to_store = true;
-    }
-    argument->is_initialised = true;
+    argument->AddValue(true);
     return true;
 }
 
 
-bool ArgumentParser::ArgParser::ParseArg(std::string& arg) {
+bool ArgumentParser::ArgParser::ParseArg(const std::string& arg) {
     if (has_help_) {
         std::string tmp1 = "-" + std::string(help_short_name_, 1);
         std::string tmp2 = "--" + help_full_name_;
@@ -143,9 +121,9 @@ bool ArgumentParser::ArgParser::ParseArg(std::string& arg) {
     if (arg[0] != '-') {
         // positional
         if (positional_int != nullptr) {
-            return A(positional_int, stoi(arg));
+            return positional_int->AddValue(stoi(arg));
         } else if (positional_str != nullptr) {
-            return A(positional_str, arg);
+            return positional_str->AddValue(arg);
         } else {
             return false;
         }
@@ -225,7 +203,7 @@ ArgumentParser::ArgParser::AddIntArgument(char short_name,
 
 int32_t
 ArgumentParser::ArgParser::GetIntValue(const char* arg_name, uint32_t index) {
-    return int_arg_names[arg_name]->values[index];
+    return int_arg_names[arg_name]->GetValue(index);
 }
 
 
@@ -247,22 +225,23 @@ ArgumentParser::ArgParser::AddStringArgument(char short_name,
 
 std::string ArgumentParser::ArgParser::GetStringValue(const char* arg_name,
                                                       uint32_t index) {
-    return str_arg_names[arg_name]->values[index];
+    return str_arg_names[arg_name]->GetValue(index);
 }
 
-ArgumentParser::BoolArgument& ArgumentParser::ArgParser::AddFlag(const char* full_name) {
+ArgumentParser::BoolArgument&
+ArgumentParser::ArgParser::AddFlag(const char* full_name) {
     BoolArgument* new_arg = new BoolArgument;
     bool_arg_names.insert(std::make_pair(full_name, new_arg));
     return *new_arg;
 }
 
-ArgumentParser::BoolArgument& ArgumentParser::ArgParser::AddFlag(char short_name, const char* full_name) {
+ArgumentParser::BoolArgument&
+ArgumentParser::ArgParser::AddFlag(char short_name, const char* full_name) {
     BoolArgument* new_arg = new BoolArgument;
     bool_arg_names.insert(std::make_pair(full_name, new_arg));
     bool_arg_names.insert(std::make_pair(std::string(1, short_name), new_arg));
     return *new_arg;
 }
-
 
 
 bool ArgumentParser::ArgParser::Help() {
@@ -271,7 +250,7 @@ bool ArgumentParser::ArgParser::Help() {
 
 void ArgumentParser::ArgParser::GetPositional() {
     for (const auto& elem: int_arg_names) {
-        if (elem.second->positional) {
+        if (elem.second->IsPositional()) {
             if (positional_int != nullptr) {
                 std::cerr << "Only one argument can be positional" << '\n';
             }
@@ -280,7 +259,7 @@ void ArgumentParser::ArgParser::GetPositional() {
     }
 
     for (const auto& elem: str_arg_names) {
-        if (elem.second->positional) {
+        if (elem.second->IsPositional()) {
             if (positional_str != nullptr || positional_int != nullptr) {
                 std::cerr << "Only one argument can be positional" << '\n';
             }
