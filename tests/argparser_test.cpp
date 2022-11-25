@@ -105,7 +105,7 @@ TEST(ArgParserTestSuite, MinCountMultiValueTest) {
     ASSERT_FALSE(parser.Parse(SplitString("app --param1=1 --param1=2 --param1=3")));
 }
 
-/*
+
 TEST(ArgParserTestSuite, FlagTest) {
     ArgParser parser("My Parser");
     parser.AddFlag('f', "flag1");
@@ -126,7 +126,7 @@ TEST(ArgParserTestSuite, FlagsTest) {
     ASSERT_TRUE(parser.GetFlag("flag1"));
     ASSERT_TRUE(parser.GetFlag("flag2"));
     ASSERT_TRUE(flag3);
-}*/
+}
 
 
 
@@ -141,7 +141,7 @@ TEST(ArgParserTestSuite, PositionalArgTest) {
     ASSERT_EQ(values.size(), 5);
 }
 
-/*
+
 TEST(ArgParserTestSuite, HelpTest) {
     ArgParser parser("My Parser");
     parser.AddHelp('h', "help", "Some Description about program");
@@ -150,7 +150,7 @@ TEST(ArgParserTestSuite, HelpTest) {
     ASSERT_TRUE(parser.Help());
 }
 
-
+/*
 TEST(ArgParserTestSuite, HelpStringTest) {
     ArgParser parser("My Parser");
     parser.AddHelp('h', "help", "Some Description about program");
