@@ -1,1 +1,1 @@
-add_library(argparser ArgParser.cpp)
+add_library(argparser ArgParser.cpp ArgParser.h argument.h argument.cpp boolargument.cpp boolargument.h)
