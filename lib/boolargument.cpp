@@ -1,5 +1,13 @@
 #include "boolargument.h"
 
+
+
+BoolArgument::BoolArgument(const std::string& description) {
+    is_initialised_ = false;
+    value_to_store_ = nullptr;
+    description_ = description;
+}
+
 BoolArgument& BoolArgument::Default(bool value0) {
     value_ = value0;
     is_initialised_ = true;
@@ -11,10 +19,6 @@ BoolArgument& BoolArgument::StoreValue(bool& value) {
     return *this;
 }
 
-BoolArgument::BoolArgument() {
-    is_initialised_ = false;
-    value_to_store_ = nullptr;
-}
 
 bool BoolArgument::IsInitialised() {
     return is_initialised_;

@@ -1,5 +1,6 @@
-#include <vector>
 #include <iostream>
+#include <vector>
+
 #include "ArgParser.h"
 
 ArgumentParser::ArgParser::ArgParser(const char* name) {
@@ -48,8 +49,13 @@ bool ArgumentParser::ArgParser::BoolArgsInitialised() {
 
 
 bool ArgumentParser::ArgParser::IsInitialised() {
-    return IntArgsInitialised() && StrArgsInitialised() &&
-           BoolArgsInitialised();
+    bool int_initialised = IntArgsInitialised();
+    bool str_initialised = StrArgsInitialised();
+    bool bool_initialised = BoolArgsInitialised();
+
+    return (int_initialised && str_initialised && bool_initialised)
+           || (call_help_ && !int_initialised && !str_initialised &&
+               !bool_initialised);
 }
 
 bool is_number(std::string& str) {
@@ -66,11 +72,6 @@ bool is_number(std::string& str) {
     }
     return true;
 }
-
-
-// TODO: value and value_to_store - объединить
-
-// TODO: last test
 
 
 bool ArgumentParser::ArgParser::AddIntArgValue(const std::string& name,
@@ -184,18 +185,21 @@ bool ArgumentParser::ArgParser::Parse(const std::vector<std::string>& argv) {
 
 
 Argument<int32_t>&
-ArgumentParser::ArgParser::AddIntArgument(const char* full_name) {
-    auto new_arg = std::make_shared<Argument<int32_t>>();
+ArgumentParser::ArgParser::AddIntArgument(const char* full_name,
+                                          const std::string& description) {
+    auto new_arg = std::make_shared<Argument<int32_t>>(description);
     int_arg_names_.insert(std::make_pair(full_name, new_arg));
     return *new_arg;
 }
 
 Argument<int32_t>&
 ArgumentParser::ArgParser::AddIntArgument(char short_name,
-                                          const char* full_name) {
-    auto new_arg = std::make_shared<Argument<int32_t>>();
+                                          const char* full_name,
+                                          const std::string& description) {
+    auto new_arg = std::make_shared<Argument<int32_t>>(description);
     int_arg_names_.insert(std::make_pair(full_name, new_arg));
-    int_arg_names_.insert(std::make_pair(std::string(1, short_name), std::shared_ptr(new_arg)));
+    int_arg_names_.insert(std::make_pair(std::string(1, short_name),
+                                         std::shared_ptr(new_arg)));
     return *new_arg;
 }
 
@@ -205,41 +209,47 @@ ArgumentParser::ArgParser::GetIntValue(const char* arg_name, uint32_t index) {
 }
 
 Argument<std::string>&
-ArgumentParser::ArgParser::AddStringArgument(const char* full_name) {
-    auto new_arg = std::make_shared<Argument<std::string>>();
+ArgumentParser::ArgParser::AddStringArgument(const char* full_name,
+                                             const std::string& description) {
+    auto new_arg = std::make_shared<Argument<std::string>>(description);
     str_arg_names_.insert(std::make_pair(full_name, new_arg));
     return *new_arg;
 }
 
 Argument<std::string>&
 ArgumentParser::ArgParser::AddStringArgument(char short_name,
-                                             const char* full_name) {
-    auto new_arg = std::make_shared<Argument<std::string>>();
+                                             const char* full_name,
+                                             const std::string& description) {
+    auto new_arg = std::make_shared<Argument<std::string>>(description);
     str_arg_names_.insert(std::make_pair(full_name, new_arg));
-    str_arg_names_.insert(std::make_pair(std::string(1, short_name), std::shared_ptr(new_arg)));
+    str_arg_names_.insert(std::make_pair(std::string(1, short_name),
+                                         std::shared_ptr(new_arg)));
     return *new_arg;
 }
 
-std::string ArgumentParser::ArgParser::GetStringValue(const char* arg_name,
 
+std::string ArgumentParser::ArgParser::GetStringValue(const char* arg_name,
                                                       uint32_t index) {
     return str_arg_names_[arg_name]->GetValue(index);
 }
+
 BoolArgument&
-ArgumentParser::ArgParser::AddFlag(const char* full_name) {
-    auto new_arg =  std::make_shared<BoolArgument>();
+ArgumentParser::ArgParser::AddFlag(const char* full_name,
+                                   const std::string& description) {
+    auto new_arg = std::make_shared<BoolArgument>(description);
     bool_arg_names_.insert(std::make_pair(full_name, new_arg));
     return *new_arg;
 }
 
 BoolArgument&
-ArgumentParser::ArgParser::AddFlag(char short_name, const char* full_name) {
-    auto new_arg =  std::make_shared<BoolArgument>();
+ArgumentParser::ArgParser::AddFlag(char short_name, const char* full_name,
+                                   const std::string& description) {
+    auto new_arg = std::make_shared<BoolArgument>(description);
     bool_arg_names_.insert(std::make_pair(full_name, new_arg));
-    bool_arg_names_.insert(std::make_pair(std::string(1, short_name), std::shared_ptr(new_arg)));
+    bool_arg_names_.insert(std::make_pair(std::string(1, short_name),
+                                          std::shared_ptr(new_arg)));
     return *new_arg;
 }
-
 
 bool ArgumentParser::ArgParser::Help() {
     std::cout << help_text_;
@@ -270,4 +280,5 @@ void ArgumentParser::ArgParser::GetPositional() {
 bool ArgumentParser::ArgParser::GetFlag(const char* arg_name) {
     return bool_arg_names_[arg_name]->GetValue();
 }
+
 

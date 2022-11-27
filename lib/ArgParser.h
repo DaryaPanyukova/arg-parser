@@ -43,23 +43,23 @@ namespace ArgumentParser {
         bool Parse(const std::vector<std::string>& argv);
 
 
-        BoolArgument& AddFlag(const char* full_name);
+        BoolArgument& AddFlag(const char* full_name, const std::string& description = "");
 
-        BoolArgument& AddFlag(char short_name, const char* full_name);
+        BoolArgument& AddFlag(char short_name, const char* full_name, const std::string& description = "");
 
         bool GetFlag(const char* arg_name);
 
-        Argument<int32_t>& AddIntArgument(const char* full_name);
+        Argument<int32_t>& AddIntArgument(const char* full_name, const std::string& description = "");
 
         Argument<int32_t>&
-        AddIntArgument(char short_name, const char* full_name);
+        AddIntArgument(char short_name, const char* full_name, const std::string& description = "");
 
         int32_t GetIntValue(const char* arg_name, uint32_t index = 0);
 
-        Argument<std::string>& AddStringArgument(const char* full_name);
+        Argument<std::string>& AddStringArgument(const char* full_name, const std::string& description = "");
 
         Argument<std::string>&
-        AddStringArgument(char short_name, const char* full_name);
+        AddStringArgument(char short_name, const char* full_name, const std::string& description = "");
 
         std::string GetStringValue(const char* arg_name, uint32_t index = 0);
 

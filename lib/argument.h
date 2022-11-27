@@ -12,21 +12,24 @@
 template<class Type>
 class Argument {
 private:
-    std::vector<Type> values_;
+    std::string description_;
 
     // MultiValue
     bool multi_value_;
     size_t min_args_count_;
 
     // StoreValue(s)
-    std::vector<Type>* values_to_store_;
+    bool store_values_;
+    std::vector<Type>* values_;
     Type* value_to_store_;
 
     // Positional
     bool positional_;
 
 public:
-    Argument();
+    Argument(const std::string& description = "");
+
+    ~Argument();
 
     Argument& MultiValue(size_t min_args_count0 = 2);
 

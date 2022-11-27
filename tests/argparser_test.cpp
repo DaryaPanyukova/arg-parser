@@ -150,7 +150,7 @@ TEST(ArgParserTestSuite, HelpTest) {
     ASSERT_TRUE(parser.Help());
 }
 
-/*
+
 TEST(ArgParserTestSuite, HelpStringTest) {
     ArgParser parser("My Parser");
     parser.AddHelp('h', "help", "Some Description about program");
@@ -161,4 +161,4 @@ TEST(ArgParserTestSuite, HelpStringTest) {
 
 
     ASSERT_TRUE(parser.Parse(SplitString("app --help")));
-}*/
+}

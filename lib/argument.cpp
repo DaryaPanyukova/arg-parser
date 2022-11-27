@@ -4,11 +4,14 @@ template class Argument<int32_t>;
 template class Argument<std::string>;
 
 template <class Type>
-Argument<Type>::Argument() {
+Argument<Type>::Argument(const std::string& description) {
+    description_ = description;
+    store_values_ = false;
+
     multi_value_ = false;
     min_args_count_ = 1;
 
-    values_to_store_ = nullptr;
+    values_ = new std::vector <Type>;
     value_to_store_ = nullptr;
     positional_ = false;
 
@@ -28,8 +31,9 @@ Argument<Type>& Argument<Type>::StoreValue(Type& value) {
 }
 
 template <class Type>
-Argument<Type>& Argument<Type>::StoreValues(std::vector <Type>& values) {
-    values_to_store_ = &values;
+Argument<Type>& Argument<Type>::StoreValues(std::vector <Type>& values_to_store) {
+    values_ = &values_to_store;
+    store_values_ = true;
     return *this;
 }
 
@@ -41,22 +45,19 @@ Argument<Type>& Argument<Type>::Positional() {
 
 template <class Type>
 Argument<Type>& Argument<Type>::Default(const Type& value) {
-    values_.push_back(value);
+    values_->push_back(value);
     return *this;
 }
 
 
 template <class Type>
 bool Argument<Type>::AddValue(const Type& value) {
-
-    if (!multi_value_ && !values_.empty()) {
+    if (!multi_value_ && !values_->empty()) {
         return false;
     } else {
-        values_.push_back(value);
+        values_->push_back(value);
         if (value_to_store_ != nullptr) {
             *value_to_store_ = value;
-        } else if (values_to_store_ != nullptr) {
-            values_to_store_->push_back(value);
         }
         return true;
     }
@@ -64,7 +65,7 @@ bool Argument<Type>::AddValue(const Type& value) {
 
 template <class Type>
 bool Argument<Type>::IsInitialised() {
-    return values_.size() >= min_args_count_;
+    return values_->size() >= min_args_count_;
 }
 
 template <class Type>
@@ -74,5 +75,12 @@ bool Argument<Type>::IsPositional() {
 
 template <class Type>
 Type Argument<Type>::GetValue(size_t index) {
-    return values_[index];
+    return (*values_)[index];
+}
+
+template<class Type>
+Argument<Type>::~Argument() {
+    if (!store_values_) {
+        delete values_;
+    }
 }
